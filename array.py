@@ -43,3 +43,63 @@ def next_greater_elements(nums):
         stack.append(i)
 
     return ans
+# Top K Elements (Heaps)
+"""
+“Top K largest/smallest/frequent elements”, “Kth largest”, or similar ranking tasks.
+O(n*log k): n times repositioning k elements while maintaining heap trait
+largest -> min-heap, head is the smallest of the k largest numbers
+smallest -> max-heap, head is the largest of the k smallest numbers
+
+~ If the problem cares about uniqueness (e.g., “top K distinct elements”),
+you may need a set or to deduplicate before/after the heap.
+~ If it cares about original order, you might need to store (priority, index)
+and sort or handle ties carefully after popping from the heap.
+~ For “top K elements”, remember that the heap contents are in arbitrary order; if you need
+them sorted, you must sort after extraction (or use nlargest/nsmallest which do this for you).
+"""
+import heapq
+
+def top_k_largest(nums, k):
+    """
+    Returns the k largest elements in nums.
+    """
+    if k <= 0:
+        return []
+    # for k-th largest num
+    """
+    # Returns the k-th largest element in nums.
+    if k <= 0 or k > len(nums):
+        raise ValueError("k out of range")
+    """
+
+    
+    # Min-heap of size k
+    heap = []
+    for x in nums:
+        if len(heap) < k:
+            heapq.heappush(heap, x)
+        else:
+            if x > heap[0]:
+                heapq.heapreplace(heap, x)
+    # heap contains k largest, in arbitrary order
+    return heap
+
+    # return heap[0] # FOR The smallest in the heap is the k-th largest overall
+
+def top_k_smallest(nums, k):
+    """
+    Returns the k smallest elements using a max-heap simulated with negatives.
+    """
+    if k <= 0:
+        return []
+
+    heap = []
+    for x in nums:
+        if len(heap) < k:
+            heapq.heappush(heap, -x)  # store negative
+        else:
+            if x < -heap[0]:          # x is smaller than current largest of the small set
+                heapq.heapreplace(heap, -x)
+
+    # Convert back to positive values
+    return [-v for v in heap]
