@@ -92,3 +92,19 @@ def postorder(root):
     postorder(root.left)
     postorder(root.right)
     # visit root.val
+
+# Matrix traversal
+"""
+Choose BFS for shortest path in grids; DFS for connected‑component counting.
+"""
+def dfs_grid(grid, r, c, visited):
+    rows, cols = len(grid), len(grid[0])
+    if not (0 <= r < rows and 0 <= c < cols):
+        return
+    if (r, c) in visited:
+        return
+    # TODO: add any cell-specific conditions (e.g., grid[r][c] == '1')
+    visited.add((r, c))
+
+    for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+        dfs_grid(grid, r + dr, c + dc, visited)
