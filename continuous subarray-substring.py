@@ -1,4 +1,12 @@
 # sliding window
+"""
+When to use – signals
+- Keywords: “subarray” or “substring” plus “longest”, “shortest”,
+“maximum sum”, “at most/at least K distinct” or “window”.
+- Input: array or string, and the subarray/substring must be contiguous.
+- There is a way to update the current answer by adding the new element
+and maybe removing the old one without scanning everything again
+"""
 def sliding_window_template(nums, condition_fn):
     """
     Generic sliding window template.
