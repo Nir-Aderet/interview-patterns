@@ -59,6 +59,33 @@ them sorted, you must sort after extraction (or use nlargest/nsmallest which do 
 """
 import heapq
 
+data = [5, 1, 3, 9, 2]
+# Best Practice: In-place transformation in O(N)
+heapq.heapify(data) 
+
+"""
+Safeguard Tuple Comparisons (Priority Queues)
+Insert a unique, incrementing counter as a tie-breaker inside the tuple: (priority, count, task)
+"""
+# Counter acts as a tie-breaker and preserves insertion order
+counter = 0
+pq = []
+# Push items: (priority, tie_breaker, data)
+heapq.heappush(pq, (2, counter, Task("Low Priority")))
+counter += 1
+heapq.heappush(pq, (2, counter, Task("Same Priority, but Second")))
+counter += 1
+
+# Max heap - The value-negation method
+max_heap = []
+heapq.heappush(max_heap, -10)  # Pushing 10
+heapq.heappush(max_heap, -30)  # Pushing 30
+
+largest = -heapq.heappop(max_heap)  # Returns 30
+
+heapq.heapreplace(heap, item)   # Pops the smallest element first, then pushes the new item.
+heapq.heappushpop(heap, item)   # Pushes the new item first, then pops the smallest.
+
 def top_k_largest(nums, k):
     """
     Returns the k largest elements in nums.
