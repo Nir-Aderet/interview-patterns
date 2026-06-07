@@ -15,7 +15,7 @@ def bfs(start, neighbors_fn):
     """
     visited = {start}
     queue = deque([(start, 0)])  # (node, distance)
-
+    # (node, prev_node) - will give a path to backtrack
     while queue:
         node, dist = queue.popleft()
         # TODO: process node (e.g., check goal, collect result)
