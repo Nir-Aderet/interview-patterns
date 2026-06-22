@@ -1,3 +1,18 @@
+/*
+| Old / Dangerous              | Modern / Safe                             |
+| ---------------------------- | ----------------------------------------- |
+| char buf[N] + strcpy/strncpy | std::string                               |
+| Raw arrays int arr[N]        | std::array<int, N> or std::vector<int>    |
+| new / delete                 | std::make_unique, std::make_shared        |
+| int for sizes/indices        | std::size_t or static_cast<int>(v.size()) |
+| NULL                         | nullptr                                   |
+| C-style cast (int)x          | static_cast<int>(x)                       |
+| Raw loop over container      | Range-based for                           |
+| volatile int for concurrency | std::atomic<int>                          |
+| #define MAX 100              | constexpr int MAX = 100;                  |
+*/
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 /*    USING
 using creates a type alias — a new name for an existing type. It makes complex types readable and easier to change later.
 using Graph = std::vector<std::vector<int>>;
@@ -43,6 +58,72 @@ int fib(int n, std::vector<int>& cache) {
 }
 */
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// BAD - Signed/Unsigned Mismatch
+std::vector<int> v = {1, 2, 3};
+for (int i = 0; i <= v.size() - 1; ++i) {  // DANGER: if v is empty, v.size()-1 wraps to HUGE_NUMBER
+    // Integer underflow on size_t (unsigned) when vector is empty causes loop to run 2^64 times.
+}
+// GOOD — cast size to signed, or use range-based for
+for (int i = 0; i < static_cast<int>(v.size()); ++i) { /* safe */ }
+for (const int x : v) { /* safest */ }
+
+// BAD - Integer Overflow and Two's Complement
+int8_t x = 127;
+x += 1;       // overflow — undefined behavior for signed, wraps to -128 for int8_t
+
+// GOOD
+int16_t x = 127;
+x += 1;       // 128 — fits
+
+// Or use explicit check
+if (x < std::numeric_limits<int8_t>::max()) x += 1;
+
+// For embedded: always use fixed-width types and document value ranges
+std::uint8_t voltage_8bit = 255;  // max voltage representation; don't add more
+// Bug class: Two's complement wrap-around for signed types is undefined behavior in C++. For unsigned types, it wraps deterministically but is often a logic bug.
+
+// BAD — silent truncation -> DATA LOSS !!!
+uint32_t big = 0x1234'5678;
+uint8_t  small = big;   // silently becomes 0x78 — data lost!
+
+// GOOD — explicit cast + assertion/documentation
+uint8_t small_safe = static_cast<uint8_t>(big & 0xFF);  // deliberate extraction
+// In modern C++17, use if-constexpr or std::in_range (C++20)
+
+// BAD
+int* p = new int(42);
+delete p;
+std::cout << *p;   // USE AFTER FREE — undefined behavior
+
+// BAD — double delete
+delete p;   // double free — heap corruption
+
+// GOOD — smart pointers make this impossible
+auto p = std::make_unique<int>(42);
+// p automatically freed when it goes out of scope
+// Second access would require explicitly moving ownership
+
+// BAD
+const std::string& bad_ref() {
+    std::string s = "hello";
+    return s;   // s is destroyed when function returns — dangling reference!
+}
+
+// GOOD — return by value
+std::string good() {
+    return "hello";   // NRVO/move ensures this is efficient
+}
+
+// BAD — iterator invalidation in VECTOR !!!
+std::vector<int> v = {1, 2, 3};
+auto it = v.begin();
+v.push_back(4);     // may reallocate! it is now dangling
+std::cout << *it;   // undefined behavior
+
+// GOOD — re-obtain iterator after modification, or use indices
+v.push_back(4);
+for (std::size_t i = 0; i < v.size(); ++i) { /* index stays valid */ }
+
 
 #include <iostream>
 #include <vector>
