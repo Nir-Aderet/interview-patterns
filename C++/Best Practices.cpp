@@ -1,3 +1,49 @@
+/*    USING
+using creates a type alias — a new name for an existing type. It makes complex types readable and easier to change later.
+using Graph = std::vector<std::vector<int>>;
+This means: "wherever I write Graph, the compiler reads std::vector<std::vector<int>>." They are 100% identical — it is purely a readability tool.
+
+If you later change the graph representation (e.g., to a map), you update one line instead of every function signature.
+In C they used: typedef std::vector<std::vector<int>> Graph;  // old C style — avoid
+*/
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/*    QUEUE
+ std::queue<int> q;
+| Method    | Does                   | Returns                    |
+| --------- | ---------------------- | -------------------------- |
+| q.front() | Peeks at front element | The element (by reference) |
+| q.back()  | Peeks at last element  | The element (by reference) |
+| q.pop()   | Removes front element  | void — nothing             |
+| q.push(x) | Adds element to back   | void                       |
+| q.empty() | Checks if empty        | bool                       |
+| q.size()  | Number of elements     | std::size_t                |
+*/
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/*    STATIC
+If you want the function to cache results across calls, declare dp as static.
+A static local variable is initialized once and persists for the entire program lifetime.
+
+!!!! NOT THREAD-SAFE !!!!
+
+int fib(int n) {
+    static std::vector<int> cache = {0, 1};  // initialized ONCE, persists forever
+
+    // Extend cache only if needed
+    while (static_cast<int>(cache.size()) <= n) {
+        int sz = cache.size();
+        cache.push_back(cache[sz-1] + cache[sz-2]);
+    }
+    return cache[n];
+}
+External cache passed in
+The external cache pattern is the cleanest for real code:
+int fib(int n, std::vector<int>& cache) {
+    if (n < static_cast<int>(cache.size())) return cache[n];
+    // ... compute and store
+}
+*/
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 #include <iostream>
 #include <vector>
 #include <string>
