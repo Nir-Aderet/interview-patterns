@@ -78,11 +78,81 @@ std::vector<std::vector<std::string>> group_anagrams(
     return result;
 }
 
-int main() {
+int main3() {
     auto groups = group_anagrams({"eat", "tea", "tan", "ate", "nat", "bat"});
     for (const auto& g : groups) {
         for (const auto& w : g) std::cout << w << " ";
         std::cout << "\n";
     }
     return 0;
+}
+
+// DP
+// Classic: Fibonacci with memoization
+#include <vector>
+#include <iostream>
+
+int fib(int n) {
+    if (n <= 1) return n;
+    std::vector<int> dp(n + 1);
+    dp[0] = 0; dp[1] = 1;
+    for (int i = 2; i <= n; ++i)
+        dp[i] = dp[i-1] + dp[i-2];
+    return dp[n];
+}
+
+// Coin change — minimum coins for amount
+int coin_change(const std::vector<int>& coins, int amount) {
+    std::vector<int> dp(amount + 1, amount + 1);  // "infinity"
+    dp[0] = 0;
+    for (int i = 1; i <= amount; ++i) {
+        for (int coin : coins) {
+            if (coin <= i) dp[i] = std::min(dp[i], dp[i - coin] + 1);
+        }
+    }
+    return (dp[amount] > amount) ? -1 : dp[amount];
+}
+
+int main4() {
+    std::cout << fib(10) << "\n";                           // 55
+    std::cout << coin_change({1, 5, 6, 9}, 11) << "\n";    // 2 (5+6)
+    return 0;
+}
+
+// In real code, you bundle the cache and the function together so the caller never has to manage the cache manually.
+// This is the OOP approach.
+
+#include <unordered_map>
+#include <iostream>
+
+class FibSolver {
+public:
+    int compute(int n) {
+        if (n <= 1) return n;
+
+        auto it = cache_.find(n);
+        if (it != cache_.end()) {
+            return it->second;          // cache hit
+        }
+
+        int result = compute(n - 1) + compute(n - 2);
+        cache_[n] = result;             // store
+        return result;
+    }
+
+    void clear_cache() { cache_.clear(); }
+    std::size_t cache_size() const { return cache_.size(); }
+
+private:
+    std::unordered_map<int, int> cache_;   // hidden from caller
+};
+
+int main5() {
+    FibSolver solver;                       // cache lives inside the object
+
+    std::cout << solver.compute(5)  << "\n";   // 5
+    std::cout << solver.compute(10) << "\n";   // 55
+    std::cout << solver.compute(5)  << "\n";   // instant — still cached
+
+    std::cout << "Cache size: " << solver.cache_size() << "\n";  // 9 entries (2..10)
 }
