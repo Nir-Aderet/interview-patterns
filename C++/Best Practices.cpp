@@ -1,4 +1,12 @@
 /*
+Hexadecimal Literal: Prefix the value with 0x or 0X.
+Binary Literal: Prefix the value with 0b or 0B
+std::int32_t  s32 = -1'000'000;      // digit separator ' for readability
+
+*/
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/*
 | Old / Dangerous              | Modern / Safe                             |
 | ---------------------------- | ----------------------------------------- |
 | char buf[N] + strcpy/strncpy | std::string                               |
@@ -16,11 +24,19 @@
 /*    USING
 using creates a type alias — a new name for an existing type. It makes complex types readable and easier to change later.
 using Graph = std::vector<std::vector<int>>;
+using AdjList = std::unordered_map<int, std::vector<int>>;
 This means: "wherever I write Graph, the compiler reads std::vector<std::vector<int>>." They are 100% identical — it is purely a readability tool.
 
 If you later change the graph representation (e.g., to a map), you update one line instead of every function signature.
 In C they used: typedef std::vector<std::vector<int>> Graph;  // old C style — avoid
 */
+
+ /*    AUTO
+Let the Compiler Deduce the Type, The type is still fully static and fixed at compile time
+for (auto x : v)            std::cout << x << " ";   // x is int (copy)
+for (auto& x : v)           x *= 2;                   // x is int& (modifies v)
+for (const auto& x : v)     std::cout << x << " ";   // x is const int& (read-only, no copy)
+ */
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 /*    QUEUE
  std::queue<int> q;
@@ -131,6 +147,83 @@ for (std::size_t i = 0; i < v.size(); ++i) { /* index stays valid */ }
 #include <unordered_map>
 #include <memory>
 #include <algorithm>
+
+/*
+| Use Case                               | Reference T& | Pointer T*         | Reason                                            |
+| -------------------------------------- | ------------ | ------------------ | ------------------------------------------------- |
+| Read a large object without copying    | const T&     | —                  | Reference cannot be null; cleaner syntax          |
+| Modify caller's variable               | T&           | T*                 | Both work; reference is cleaner if never null     |
+| Optional parameter (might not exist)   | —            | T* (nullable)      | Reference cannot represent "nothing"              |
+| Return multiple values from a function | T& out       | T* out             | Reference preferred if always valid               |
+| Pointing into a dynamic data structure | —            | T*                 | Pointers can be re-seated; references cannot      |
+| C API interop                          | —            | T*                 | C has no references                               |
+| Array/buffer passed in                 | —            | T* buf, size_t len | Pointer + length is the C++ idiom for raw buffers |
+| Re-pointing to a different object      | —            | T*                 | References cannot be re-seated after binding      |
+*/
+#include <iostream>
+#include <string>
+#include <vector>
+
+class Inverter {
+public:
+    // --- 1. Pass by VALUE — small/trivial types, or when you need a local copy
+    //        Cost: one copy of the argument is made, caller unchanged
+    void set_id(int id) {
+        id_ = id;   // int is cheap to copy — by-value is fine
+    }
+    // --- 2. Pass by CONST REFERENCE — large objects, read-only
+    //        Cost: no copy; caller's object cannot be modified
+    void log_name(const std::string& name) const {
+        std::cout << name << "\n";   // reads name, never copies it
+    }
+    // --- 3. Pass by NON-CONST REFERENCE — large objects, modify caller's variable
+    //        Cost: no copy; caller's object WILL be modified
+    void append_log(std::string& log) {
+        log += "[Inverter] ";        // modifies the caller's string directly
+    }
+    // --- 4. Pass by POINTER — optional parameters, arrays, C API interop
+    //        Cost: no copy; can be nullptr
+    void set_logger(std::ostream* out) {
+        logger_ = out;               // store pointer; caller may pass nullptr
+    }
+    // --- 5. Pass by RVALUE REFERENCE (T&&) — take ownership of a temporary
+    //        Cost: no copy; moves the resource (e.g., string buffer ownership)
+    void set_name(std::string&& name) {
+        name_ = std::move(name);     // steal name's internal buffer — no copy
+    }
+    // --- 6. CONST member function — guarantees this function does NOT modify the object
+    //        Required when called on a const object
+    int  get_id()   const { return id_; }
+    bool is_active() const { return active_; }
+    // --- 7. STATIC member function — belongs to the class, not an instance
+    //        Has no 'this' pointer; accessed as Inverter::make_default()
+    static Inverter make_default() {
+        return Inverter();
+    }
+    // --- 8. [[nodiscard]] — compiler warns if return value is ignored
+    //        Use for error codes and important return values
+    [[nodiscard]] bool connect() {
+        active_ = true;
+        return true;   // warning if caller writes: inv.connect(); without using result
+    }
+private:
+    int          id_     = 0;
+    bool         active_ = false;
+    std::string  name_;
+    std::ostream* logger_ = nullptr;
+};
+
+int main6() {
+    Inverter inv;
+    inv.set_id(42);                     // by value
+    inv.log_name("SE5000");             // const ref — no copy of string literal
+    std::string log;
+    inv.append_log(log);                // non-const ref — log is modified
+    inv.set_logger(&std::cout);         // pointer — optional
+    inv.set_name(std::string("Alpha")); // rvalue ref — string moved, not copied
+    bool ok = inv.connect();            // [[nodiscard]] — result must be used
+    auto inv2 = Inverter::make_default(); // static
+}
 
 // Reserve to avoid reallocations (important for performance)
 std::vector<int> big;
