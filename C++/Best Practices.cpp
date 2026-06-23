@@ -30,6 +30,17 @@ This means: "wherever I write Graph, the compiler reads std::vector<std::vector<
 If you later change the graph representation (e.g., to a map), you update one line instead of every function signature.
 In C they used: typedef std::vector<std::vector<int>> Graph;  // old C style — avoid
 */
+ 
+/* CONSTEXPR + CONST
+const means "cannot be changed after initialization — but the value may be computed at runtime." 
+constexpr means "must be computable at compile time."
+*/
+ // constexpr — value MUST be known at compile time
+constexpr int BUFFER_SIZE  = 256;     // compile-time constant
+// Key embedded benefit: use as array size (requires compile-time constant)
+std::array<uint8_t, BUFFER_SIZE> buf{};  // OK — size known at compile time
+// constexpr FUNCTION — evaluated at compile time if given constexpr arguments
+constexpr int square(int x) { return x * x; }
 
  /*    AUTO
 Let the Compiler Deduce the Type, The type is still fully static and fixed at compile time
@@ -50,7 +61,17 @@ for (const auto& x : v)     std::cout << x << " ";   // x is const int& (read-on
 | q.size()  | Number of elements     | std::size_t                |
 */
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/*    STATIC
+// ENUM CLASS
+// Plain enum — BAD: names pollute global scope, implicitly convert to int
+enum State { IDLE, RUNNING, FAULT };
+int x = IDLE;      // accidentally compiles — IDLE is just 0
+
+// enum class — GOOD: scoped, no implicit int conversion
+enum class State { IDLE, RUNNING, FAULT };
+// int x = State::IDLE;    // ERROR — won't compile; must use static_cast
+State s = State::IDLE;     // must prefix with class name
+
+ /*    STATIC
 If you want the function to cache results across calls, declare dp as static.
 A static local variable is initialized once and persists for the entire program lifetime.
 
@@ -74,7 +95,27 @@ int fib(int n, std::vector<int>& cache) {
 }
 */
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// BAD - Signed/Unsigned Mismatch
+
+std::vector<int> v = {1, 2, 3};
+
+// nums.size() returns std::size_t — an UNSIGNED 64-bit integer
+// 0 - 1 on unsigned = WRAPS AROUND to 18446744073709551615 (2^64 - 1) - This is NOT -1.
+// BAD — signed/unsigned mismatch + underflow on empty vector
+for (int i = 0; i <= v.size() - 1; ++i) {   // compiler warning: signed/unsigned compare
+    std::cout << v[i] << " ";
+}
+
+// GOOD — cast size() to signed int before subtracting
+for (int i = 0; i <= static_cast<int>(v.size()) - 1; ++i) {
+    // Now both sides are int (signed) - Empty vector: static_cast<int>(0) - 1 = -1, loop body never runs
+    std::cout << v[i] << " ";
+}
+
+// BEST — avoid the problem entirely with range-based for or size_t loop
+for (const int x : v) std::cout << x << " ";              // clearest
+for (std::size_t i = 0; i < v.size(); ++i) std::cout << v[i]; // if you need index
+ 
+ // BAD - Signed/Unsigned Mismatch
 std::vector<int> v = {1, 2, 3};
 for (int i = 0; i <= v.size() - 1; ++i) {  // DANGER: if v is empty, v.size()-1 wraps to HUGE_NUMBER
     // Integer underflow on size_t (unsigned) when vector is empty causes loop to run 2^64 times.
@@ -147,6 +188,22 @@ for (std::size_t i = 0; i < v.size(); ++i) { /* index stays valid */ }
 #include <unordered_map>
 #include <memory>
 #include <algorithm>
+
+// v.size() returns size_t (unsigned). if v is empty then (0-1)u = very large number
+// FIX 1 — cast to signed before arithmetic
+for (int i = 0; i < static_cast<int>(v.size()); ++i) {
+    std::cout << v[i] << "\n";   // safe
+}
+
+// FIX 2 — use size_t for loop variable (no mixing)
+for (std::size_t i = 0; i < v.size(); ++i) {
+    std::cout << v[i] << "\n";   // safe — both unsigned
+}
+
+// FIX 3 — best: avoid indices entirely
+for (const int x : v) {
+    std::cout << x << "\n";      // safest — no index, no size comparison
+}
 
 /*
 | Use Case                               | Reference T& | Pointer T*         | Reason                                            |
@@ -317,25 +374,23 @@ void example() {
     p = nullptr;            // best practice: null after delete
 }
 
-// STRING
+// BIT MANIPULATION
+uint8_t reg = 0b0000'0000;   // start: all bits off
 
-std::string s = "Hello, SolarEdge!";
+// SET bit N:   reg |= (1u << N)   — forces bit N to 1
 
-std::cout << s.size()         << "\n";   // 17
-std::cout << s.substr(7, 9)   << "\n";   // "SolarEdge"
-std::cout << s.find("Solar")  << "\n";   // 7 (index)
+// CLEAR bit N:  reg &= ~(1u << N)  — forces bit N to 0
 
-s += " :)";                               // concatenate
-s.replace(0, 5, "Hi");                   // replace "Hello" → "Hi"
+// TOGGLE bit N: reg ^= (1u << N)   — flips bit N
 
-// Convert to C string (needed for legacy APIs)
-const char* cstr = s.c_str();
+// CHECK bit N:  (reg >> N) & 1u    — returns 1 if set, 0 if not
+bool bit3_set = (reg >> 3) & 1u;    // false (bit 3 is 0)
+bool bit0_set = (reg >> 0) & 1u;    // true  (bit 0 is 1)
 
-// Check if contains
-if (s.find("Solar") != std::string::npos) {
-    std::cout << "Found!\n";
-}
-
+// EXTRACT a bitfield: bits 2-4 (3 bits wide)
+// Step 1: shift right to bring target bits to position 0
+// Step 2: mask with (2^width - 1) to zero out upper bits
+uint8_t field = (reg >> 2) & 0x07;  // 0x07 = 0b0000'0111 (3-bit mask)
 
 // unordered_map
 
