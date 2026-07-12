@@ -72,7 +72,9 @@ inorder: left - current node action - right
 preorder: current node action - left - right
 postorder: left - right - current node action
 """
+
 def inorder(root):
+    """Best used for retrieving and printing the data of a Binary Search Tree (BST) in an ascending, sorted order."""
     if not root:
         return
     inorder(root.left)
@@ -80,6 +82,7 @@ def inorder(root):
     inorder(root.right)
 
 def preorder(root):
+    """Best used for copying trees or creating a structural duplicate, and serializing trees into arrays or strings."""
     if not root:
         return
     # visit root.val
@@ -87,6 +90,7 @@ def preorder(root):
     preorder(root.right)
 
 def postorder(root):
+    """Best used for deletion or memory cleanup (e.g., freeing memory in C/C++), where you must delete children before you can safely delete the parent node."""
     if not root:
         return
     postorder(root.left)
