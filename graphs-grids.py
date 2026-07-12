@@ -15,7 +15,26 @@ def bfs(start, neighbors_fn):
     """
     visited = {start}
     queue = deque([(start, 0)])  # (node, distance)
+    # can be queue = deque([start]) in case there is no need for level
     # (node, prev_node) - will give a path to backtrack
+
+    """
+    # LEVEL_ORDER_TRAVERSAL
+    res = []
+    curr_level = 0
+    while queue:
+        res.append([])                     # add next level to result
+        for _ in range(len_q):
+            node = q.popleft()             # Add front of queue and remove it from queue
+            res[curr_level].append(node.val)
+
+            if node.left is not None:      # Enqueue left child
+                q.append(node.left)
+            
+            if node.right is not None:     # Enqueue right child
+                q.append(node.right)
+        curr_level += 1                    # update next level
+    """
     while queue:
         node, dist = queue.popleft()
         # TODO: process node (e.g., check goal, collect result)
