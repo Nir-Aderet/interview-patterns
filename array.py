@@ -130,3 +130,17 @@ def top_k_smallest(nums, k):
 
     # Convert back to positive values
     return [-v for v in heap]
+# O(N) solution with partition (introselect algorithm)
+import numpy as np
+
+arr = np.array([9, 3, 2, 7, 5, 1, 8])
+# Partition at index 2
+result = np.partition(arr, kth=2)    # Output might look like: [1, 2, 3, 7, 5, 9, 8]
+
+arr = np.array([40, 10, 20, 50, 30])
+# Put the 3 smallest elements at the front
+partitioned = np.partition(arr, kth=3)    # Slice the first 3 elements
+smallest_three = partitioned[:3]          # Output: [10, 20, 30] (order inside may vary)
+# Partition at the 2nd largest position (-2)
+partitioned = np.partition(arr, kth=-2)   # Slice the last 2 elements
+largest_two = partitioned[-2:]            # Output: [40, 50]
