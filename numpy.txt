@@ -1,0 +1,38 @@
+🛠️ Array Creation & Initialization
+Interviewers often ask you to initialize weights, grids, or placeholder structures.
+np.array(): Converts Python lists or iterables into a multi-dimensional array.
+np.zeros(): Creates an array of a specified shape filled completely with zeros.
+np.ones(): Generates an array filled entirely with ones.
+np.arange(): Returns evenly spaced values within a given interval, similar to Python's native range().
+np.linspace(): Creates a specified number of evenly spaced values over a specified mathematical interval.
+np.eye(): Generates a 2D identity matrix with ones on the main diagonal and zeros elsewhere.
+
+🔄 Shape & Structural Modifications
+Matrix transformations are standard building blocks for neural network problems (like coding a forward pass).
+np.reshape(): Changes the dimensions of an array without altering its underlying data
+flatten(): Collapses a multi-dimensional array into a single 1D array.
+np.concatenate(): Joins a sequence of arrays along an existing structural axis.
+np.expand_dims(): Inserts a new axis at a specified position to match expected input shapes.
+np.squeeze(): Removes single-dimensional entries or axes from a given array shape.
+.T or np.transpose(): Flips the axes of an array, turning rows into columns.
+
+🔍 Searching & Conditional Logic
+These functions eliminate the need for manual loops when scanning or filtering multi-dimensional matrices.
+np.where(): Returns indices where a given condition is true, or chooses elements depending on a boolean mask.
+np.argmax() / np.argmin(): Finds the index of the maximum or minimum value along a specific axis.
+np.unique(): Finds all the unique elements of an array and can optionally return their frequencies.
+np.allclose(): Checks if two arrays are element-wise equal within a tiny numerical tolerance, perfect for testing floating-point results.
+
+🧮 Math & Statistical Aggregations
+Always clarify the axis parameter with your interviewer, as operations can be applied globally, row-wise, or column-wise.
+np.sum(): Calculates the total sum of elements across the entire array or a designated axis.
+np.mean() / np.median(): Computes the arithmetic mean or median of the dataset.
+np.std(): Computes the standard deviation, commonly used when normalizing input data.
+np.dot() / @: Performs the dot product of vectors or standard matrix multiplication.
+np.matmul(): Specifically designed for matrix multiplication of 2D arrays.
+
+🔀 Linear Algebra & Randomization
+Commonly used in advanced interviews for data science, machine learning, or quantitative engineering roles.
+np.linalg.inv(): Computes the multiplicative inverse of a square matrix.
+np.linalg.norm(): Calculates the vector or matrix norm, often used to compute Euclidean distances.
+np.random.rand() / np.random.randn(): Generates random numbers uniformly or from a standard normal distribution
